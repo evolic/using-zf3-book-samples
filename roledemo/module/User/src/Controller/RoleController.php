@@ -62,44 +62,46 @@ class RoleController extends AbstractActionController
     public function addAction()
     {
         // Create form
-        $form = new RoleForm('create', $this->entityManager);
-        
-        $roleList = [];
+        $form       = new RoleForm('create', $this->entityManager);
+        $roleList   = [];
+
         $roles = $this->entityManager->getRepository(Role::class)
-                ->findBy([], ['name'=>'ASC']);
+            ->findBy([], ['name'=>'ASC']);
+
         foreach ($roles as $role) {
             $roleList[$role->getId()] = $role->getName();
         }
+
         $form->get('inherit_roles')->setValueOptions($roleList);
         
         // Check if user has submitted the form
         if ($this->getRequest()->isPost()) {
-            
             // Fill in the form with POST data
-            $data = $this->params()->fromPost();            
-            
+            $data = $this->params()->fromPost();
+
             $form->setData($data);
-            
+
             // Validate form
-            if($form->isValid()) {
-                
+            if ($form->isValid()) {
                 // Get filtered and validated data
                 $data = $form->getData();
-                
+
                 // Add role.
                 $this->roleManager->addRole($data);
-                
+
                 // Add a flash message.
                 $this->flashMessenger()->addSuccessMessage('Added new role.');
-                
+
                 // Redirect to "index" page
-                return $this->redirect()->toRoute('roles', ['action'=>'index']);                
-            }               
+                return $this->redirect()->toRoute('roles', ['action'=>'index']);
+            } else {
+                var_dump($form->getMessages());
+            }
         } 
-        
+
         return new ViewModel([
-                'form' => $form
-            ]);
+            'form' => $form
+        ]);
     }
     
     /**

@@ -46,6 +46,8 @@ class RoleManager
         $role->setName($data['name']);
         $role->setDescription($data['description']);
         $role->setDateCreated(date('Y-m-d H:i:s'));
+        $role->setCanImpersonate($data['canImpersonate']);
+        $role->setCanBeImpersonated($data['canBeImpersonated']);
 
         // add parent roles to inherit
         $inheritedRoles = $data['inherit_roles'];

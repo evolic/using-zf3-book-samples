@@ -47,8 +47,12 @@ form ul {
   margin: 0px 5px;
 }
 
+form ul {
+  margin-left: 0;
+}
+
 form ul li {    
-  color: red;        
+  color: firebrick;
 }
 
 .alert ul {

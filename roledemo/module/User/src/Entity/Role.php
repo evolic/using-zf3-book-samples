@@ -29,7 +29,7 @@ class Role
     protected $description;
 
     /** 
-     * @ORM\Column(name="date_created")  
+     * @ORM\Column(name="date_created")
      */
     protected $dateCreated;
 
