@@ -281,6 +281,10 @@ class User
      */
     public function canBeImpersonated()
     {
+        if ($this->status != self::STATUS_ACTIVE) {
+            return false;
+        }
+
         /** @var Role $role */
         foreach ($this->roles as $role) {
             if (! $role->canBeImpersonated()) {

@@ -146,6 +146,7 @@ return [
             ],
             Controller\ImpersonateController::class => [
                 // Allow access to authenticated users having "permission.manage" permission.
+                ['actions' => ['unimpersonate'], 'allow' => '*'],
                 ['actions' => '*', 'allow' => '+user.manage']
             ],
         ]
