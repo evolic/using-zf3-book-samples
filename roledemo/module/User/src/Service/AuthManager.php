@@ -1,16 +1,24 @@
 <?php
 namespace User\Service;
 
+use Doctrine\ORM\EntityManager;
+use User\Event\AuthEvents;
 use Zend\Authentication\Result;
 use Zend\Session\SessionManager;
+use Zend\Authentication\AuthenticationService;
+use Zend\EventManager\EventManager;
+use Zend\EventManager\EventManagerInterface;
+use Zend\EventManager\EventManagerAwareInterface;
+use Zend\Log\Logger;
 use User\Service\RbacManager;
+use User\Util\UserAgent;
 
 /**
  * The AuthManager service is responsible for user's login/logout and simple access 
  * filtering. The access filtering feature checks whether the current visitor 
  * is allowed to see the given page or not.  
  */
-class AuthManager
+class AuthManager implements EventManagerAwareInterface
 {
     // Constants returned by the access filter.
     const ACCESS_GRANTED = 1; // Access to the page is granted.
@@ -19,37 +27,62 @@ class AuthManager
     
     /**
      * Authentication service.
-     * @var \Zend\Authentication\AuthenticationService
+     *
+     * @var AuthenticationService
      */
     private $authService;
     
     /**
      * Session manager.
+     *
      * @var SessionManager
      */
     private $sessionManager;
     
     /**
      * Contents of the 'access_filter' config key.
+     *
      * @var array 
      */
     private $config;
     
     /**
      * RBAC manager.
+     *
      * @var RbacManager
      */
     private $rbacManager;
+
+    /**
+     * @var EntityManager
+     */
+    private $entityManager;
+
+    /**
+     * @var EventManagerInterface
+     */
+    private $eventManager;
+
     
     /**
      * Constructs the service.
+     *
+     * @param  AuthenticationService  $authService
+     * @param  SessionManager         $sessionManager
+     * @param  array                  $config
+     * @param  RbacManager            $rbacManager
      */
-    public function __construct($authService, $sessionManager, $config, $rbacManager) 
+    public function __construct(
+        AuthenticationService $authService,
+        SessionManager $sessionManager,
+        array $config,
+        RbacManager $rbacManager
+    )
     {
-        $this->authService = $authService;
-        $this->sessionManager = $sessionManager;
-        $this->config = $config;
-        $this->rbacManager = $rbacManager;
+        $this->authService      = $authService;
+        $this->sessionManager   = $sessionManager;
+        $this->config           = $config;
+        $this->rbacManager      = $rbacManager;
     }
     
     /**
@@ -57,11 +90,25 @@ class AuthManager
      * to last for one month (otherwise the session expires on one hour).
      */
     public function login($email, $password, $rememberMe)
-    {   
+    {
+        $this->getEventManager()->trigger(AuthEvents::EVENT_NAME_LOGIN_ATTEMPT, $this, [
+            [],
+            sprintf(AuthEvents::EVENT_MESSAGE_LOGIN_ATTEMPT, $email),
+            Logger::NOTICE
+        ]);
+
         // Check if user has already logged in. If so, do not allow to log in 
         // twice.
         if ($this->authService->getIdentity() != null) {
-            throw new \Exception('Already logged in');
+            $this->getEventManager()->trigger(AuthEvents::EVENT_NAME_LOGIN_FAILED, $this, [
+                [
+                    'email' => $email,
+                ],
+                'Already logged in',
+                Logger::NOTICE
+            ]);
+
+            throw new \Exception('Already logged in', 400);
         }
             
         // Authenticate with login/password.
@@ -74,6 +121,21 @@ class AuthManager
 
         if ($result->getCode() == Result::SUCCESS) {
             $this->sessionManager->regenerateId(true);
+
+            $this->getEventManager()->trigger(AuthEvents::EVENT_NAME_LOGIN_SUCCESSFUL, $this, [
+                [],
+                sprintf(AuthEvents::EVENT_MESSAGE_LOGIN_SUCCESSFUL, $email),
+                Logger::INFO
+            ]);
+        } else {
+            $this->getEventManager()->trigger(AuthEvents::EVENT_NAME_LOGIN_FAILED, $this, [
+                [
+                    'ipAddress' => UserAgent::getClientIp(),
+                    'userAgent' => $_SERVER['HTTP_USER_AGENT'],
+                ],
+                sprintf(AuthEvents::EVENT_MESSAGE_LOGIN_FAILED, $email),
+                Logger::NOTICE
+            ]);
         }
 
         // If user wants to "remember him", we will make session to expire in 
@@ -92,6 +154,8 @@ class AuthManager
      */
     public function logout()
     {
+
+
         // Allow to log out only when user is logged in.
         if ($this->authService->getIdentity() == null) {
             throw new \Exception('The user is not logged in');
@@ -175,5 +239,40 @@ class AuthManager
         
         // Permit access to this page.
         return self::ACCESS_GRANTED;
+    }
+
+    /**
+     * Method used to inject EntityManager.
+     *
+     * @param EntityManager $entityManager
+     */
+    public function setEntityManager(EntityManager $entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
+
+    /**
+     * @param EventManagerInterface $eventManager
+     */
+    public function setEventManager(EventManagerInterface $eventManager)
+    {
+        $eventManager->setIdentifiers([
+            __CLASS__,
+            get_class($this)
+        ]);
+
+        $this->eventManager = $eventManager;
+    }
+
+    /**
+     * @return EventManagerInterface
+     */
+    public function getEventManager(): EventManagerInterface
+    {
+        if (! $this->eventManager) {
+            $this->setEventManager(new EventManager());
+        }
+
+        return $this->eventManager;
     }
 }

@@ -1,9 +1,14 @@
 <?php
 namespace User\Service;
 
+use User\Event\ImpersonateEvents;
 use Zend\Authentication\AuthenticationService;
 use User\Entity\User;
 use Zend\Authentication\Result;
+use Zend\EventManager\EventManager;
+use Zend\EventManager\EventManagerInterface;
+use Zend\EventManager\EventManagerAwareInterface;
+use Zend\Log\Logger;
 use Zend\Session\SessionManager;
 use User\Service\RbacManager;
 
@@ -23,11 +28,22 @@ class ImpersonateManager
      */
     private $impersonateService;
 
+    /**
+     * @var EventManagerInterface
+     */
+    private $eventManager;
+
 
     /**
      * Constructs the service.
+     *
+     * @param  AuthenticationService  $authService
+     * @param  ImpersonateService     $impersonateService
      */
-    public function __construct(AuthenticationService $authService, ImpersonateService $impersonateService)
+    public function __construct(
+        AuthenticationService $authService,
+        ImpersonateService $impersonateService
+    )
     {
         $this->authService          = $authService;
         $this->impersonateService   = $impersonateService;
@@ -43,9 +59,20 @@ class ImpersonateManager
      */
     public function impersonate(User $currentUser, User $userToBeImpersonate)
     {
-        $this->impersonateService->getStorage()->write($currentUser->getEmail());
+        $adminEmail = $currentUser->getEmail();
+        $userEmail  = $userToBeImpersonate->getEmail();
 
-        $this->authService->getStorage()->write($userToBeImpersonate->getEmail());
+        $this->impersonateService->getStorage()->write($adminEmail);
+        $this->authService->getStorage()->write($userEmail);
+
+        $this->getEventManager()->trigger(ImpersonateEvents::EVENT_NAME_IMPERSONATE, $this, [
+            [
+                'admin' => $adminEmail,
+                'user'  => $userEmail,
+            ],
+            sprintf(ImpersonateEvents::EVENT_MESSAGE_IMPERSONATE, $userEmail, $adminEmail),
+            Logger::NOTICE
+        ]);
 
         return true;
     }
@@ -57,11 +84,46 @@ class ImpersonateManager
      */
     public function unimpersonate()
     {
-        $email = $this->impersonateService->getStorage()->read();
+        $adminEmail = $this->impersonateService->getStorage()->read();
+        $userEmail  = $this->authService->getStorage()->read();
 
         $this->impersonateService->getStorage()->clear();
-        $this->authService->getStorage()->write($email);
+        $this->authService->getStorage()->write($adminEmail);
+
+        $this->getEventManager()->trigger(ImpersonateEvents::EVENT_NAME_UNIMPERSONATE, $this, [
+            [
+                'admin' => $adminEmail,
+                'user'  => $userEmail,
+            ],
+            sprintf(ImpersonateEvents::EVENT_MESSAGE_UNIMPERSONATE, $userEmail, $adminEmail),
+            Logger::NOTICE
+        ]);
 
         return true;
+    }
+
+    /**
+     * @param EventManagerInterface $eventManager
+     */
+    public function setEventManager(EventManagerInterface $eventManager)
+    {
+        $eventManager->setIdentifiers([
+            __CLASS__,
+            get_class($this)
+        ]);
+
+        $this->eventManager = $eventManager;
+    }
+
+    /**
+     * @return EventManagerInterface
+     */
+    public function getEventManager(): EventManagerInterface
+    {
+        if (! $this->eventManager) {
+            $this->setEventManager(new EventManager());
+        }
+
+        return $this->eventManager;
     }
 }

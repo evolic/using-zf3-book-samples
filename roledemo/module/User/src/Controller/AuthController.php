@@ -3,6 +3,7 @@
 namespace User\Controller;
 
 use Doctrine\ORM\EntityManager;
+use User\Event\Listener\LoggerListener;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Zend\Authentication\Result;
@@ -41,19 +42,23 @@ class AuthController extends AbstractActionController
     /**
      * Constructor.
      *
-     * @param  EntityManager  $entityManager
-     * @param  AuthManager    $authManager
-     * @param  UserManager    $userManager
+     * @param  EntityManager   $entityManager
+     * @param  AuthManager     $authManager
+     * @param  UserManager     $userManager
+     * @param  LoggerListener  $loggerListener
      */
     public function __construct(
         EntityManager $entityManager,
         AuthManager $authManager,
-        UserManager $userManager
+        UserManager $userManager,
+        LoggerListener $loggerListener
     )
     {
-        $this->entityManager = $entityManager;
-        $this->authManager = $authManager;
-        $this->userManager = $userManager;
+        $this->entityManager    = $entityManager;
+        $this->authManager      = $authManager;
+        $this->userManager      = $userManager;
+
+        $loggerListener->attachEvents($authManager->getEventManager());
     }
 
     /**
@@ -92,35 +97,41 @@ class AuthController extends AbstractActionController
                 // Get filtered and validated data
                 $data = $form->getData();
 
-                // Perform login attempt.
-                $result = $this->authManager->login(
-                    $data['email'],
-                    $data['password'],
-                    $data['remember_me']
-                );
+                try {
+                    // Perform login attempt.
+                    $result = $this->authManager->login(
+                        $data['email'],
+                        $data['password'],
+                        $data['remember_me']
+                    );
 
-                // Check result.
-                if ($result->getCode() == Result::SUCCESS) {
-                    // Get redirect URL.
-                    $redirectUrl = $this->params()->fromPost('redirect_url', '');
+                    // Check result.
+                    if ($result->getCode() == Result::SUCCESS) {
+                        // Get redirect URL.
+                        $redirectUrl = $this->params()->fromPost('redirect_url', '');
 
-                    if (! empty($redirectUrl)) {
-                        // The below check is to prevent possible redirect attack
-                        // (if someone tries to redirect user to another domain).
-                        $uri = new Uri($redirectUrl);
-                        if (!$uri->isValid() || $uri->getHost()!=null)
-                            throw new \Exception('Incorrect redirect URL: ' . $redirectUrl);
-                    }
+                        if (!empty($redirectUrl)) {
+                            // The below check is to prevent possible redirect attack
+                            // (if someone tries to redirect user to another domain).
+                            $uri = new Uri($redirectUrl);
+                            if (!$uri->isValid() || $uri->getHost() != null)
+                                throw new \Exception('Incorrect redirect URL: ' . $redirectUrl);
+                        }
 
-                    // If redirect URL is provided, redirect the user to that URL;
-                    // otherwise redirect to Home page.
-                    if (empty($redirectUrl)) {
-                        return $this->redirect()->toRoute('home');
+                        // If redirect URL is provided, redirect the user to that URL;
+                        // otherwise redirect to Home page.
+                        if (empty($redirectUrl)) {
+                            return $this->redirect()->toRoute('home');
+                        } else {
+                            $this->redirect()->toUrl($redirectUrl);
+                        }
                     } else {
-                        $this->redirect()->toUrl($redirectUrl);
+                        $isLoginError = true;
                     }
-                } else {
-                    $isLoginError = true;
+                } catch (\Exception $e) {
+                    $this->flashMessenger()->addErrorMessage($e->getMessage());
+
+                    return $this->redirect()->toRoute('home');
                 }
             } else {
                 $isLoginError = true;

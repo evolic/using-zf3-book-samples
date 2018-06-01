@@ -161,6 +161,11 @@ return [
             Service\RbacManager::class => Service\Factory\RbacManagerFactory::class,
             Service\RoleManager::class => Service\Factory\RoleManagerFactory::class,
             Service\UserManager::class => Service\Factory\UserManagerFactory::class,
+            Event\Listener\LoggerListener::class => function ($sm) {
+                $logger = $sm->get('Zend\Log');
+
+                return new Event\Listener\LoggerListener($logger);
+            },
         ],
     ],
     'view_manager' => [

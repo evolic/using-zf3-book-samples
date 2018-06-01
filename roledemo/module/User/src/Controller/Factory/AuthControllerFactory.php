@@ -2,8 +2,9 @@
 namespace User\Controller\Factory;
 
 use Interop\Container\ContainerInterface;
-use User\Controller\AuthController;
 use Zend\ServiceManager\Factory\FactoryInterface;
+use User\Controller\AuthController;
+use User\Event\Listener\LoggerListener;
 use User\Service\AuthManager;
 use User\Service\UserManager;
 
@@ -18,7 +19,8 @@ class AuthControllerFactory implements FactoryInterface
         $entityManager  = $container->get('doctrine.entitymanager.orm_default');
         $authManager    = $container->get(AuthManager::class);
         $userManager    = $container->get(UserManager::class);
+        $loggerListener = $container->get(LoggerListener::class);
 
-        return new AuthController($entityManager, $authManager, $userManager);
+        return new AuthController($entityManager, $authManager, $userManager, $loggerListener);
     }
 }

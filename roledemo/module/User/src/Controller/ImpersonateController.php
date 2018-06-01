@@ -2,6 +2,7 @@
 namespace User\Controller;
 
 use Doctrine\ORM\EntityManager;
+use User\Event\Listener\LoggerListener;
 use Zend\Mvc\Controller\AbstractActionController;
 use User\Entity\User;
 use User\Service\ImpersonateManager;
@@ -36,11 +37,18 @@ class ImpersonateController extends AbstractActionController
      *
      * @param  EntityManager       $entityManager
      * @param  ImpersonateManager  $impersonateManager
+     * @param  LoggerListener      $loggerListener
      */
-    public function __construct(EntityManager $entityManager, ImpersonateManager $impersonateManager)
+    public function __construct(
+        EntityManager $entityManager,
+        ImpersonateManager $impersonateManager,
+        LoggerListener $loggerListener
+    )
     {
         $this->entityManager        = $entityManager;
         $this->impersonateManager   = $impersonateManager;
+
+        $loggerListener->attachEvents($impersonateManager->getEventManager());
     }
 
 

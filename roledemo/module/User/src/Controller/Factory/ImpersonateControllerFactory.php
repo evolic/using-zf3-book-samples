@@ -3,6 +3,7 @@ namespace User\Controller\Factory;
 
 use Interop\Container\ContainerInterface;
 use User\Controller\ImpersonateController;
+use User\Event\Listener\LoggerListener;
 use Zend\ServiceManager\Factory\FactoryInterface;
 use User\Service\ImpersonateManager;
 
@@ -16,7 +17,8 @@ class ImpersonateControllerFactory implements FactoryInterface
     {
         $entityManager      = $container->get('doctrine.entitymanager.orm_default');
         $impersonateManager = $container->get(ImpersonateManager::class);
+        $loggerListener = $container->get(LoggerListener::class);
 
-        return new ImpersonateController($entityManager, $impersonateManager);
+        return new ImpersonateController($entityManager, $impersonateManager, $loggerListener);
     }
 }

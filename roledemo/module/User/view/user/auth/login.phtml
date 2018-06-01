@@ -23,6 +23,8 @@ $form->get('password')->setAttributes([
     ]);
 ?>
 
+<?= $this->partial('partial/flash-messages.phtml', 'application'); ?>
+
 <div class="row">
     <div class="col-md-offset-4 col-md-3">
         <form class="form-signin" method="post">
