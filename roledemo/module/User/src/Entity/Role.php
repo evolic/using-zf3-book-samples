@@ -34,6 +34,17 @@ class Role
     protected $dateCreated;
 
     /**
+     * @ORM\Column(name="can_impersonate", type="boolean", nullable=false)
+     */
+    protected $canImpersonate;
+
+    /**
+     * @ORM\Column(name="can_be_impersonated", type="boolean", nullable=false)
+     */
+    protected $canBeImpersonated;
+
+
+    /**
      * @ORM\ManyToMany(targetEntity="User\Entity\Role")
      * @ORM\JoinTable(name="role_hierarchy",
      *      joinColumns={@ORM\JoinColumn(name="child_role_id", referencedColumnName="id")},
@@ -102,7 +113,7 @@ class Role
     {
         return $this->description;
     }
-    
+
     public function setDescription($description)
     {
         $this->description = $description;
@@ -112,7 +123,37 @@ class Role
     {
         return $this->dateCreated;
     }
-    
+
+    public function canImpersonate()
+    {
+        return $this->canImpersonate;
+    }
+
+    public function getCanImpersonate()
+    {
+        return $this->canImpersonate;
+    }
+
+    public function setCanImpersonate($canImpersonate)
+    {
+        $this->canImpersonate = $canImpersonate;
+    }
+
+    public function canBeImpersonated()
+    {
+        return $this->canBeImpersonated;
+    }
+
+    public function getCanBeImpersonated()
+    {
+        return $this->canBeImpersonated;
+    }
+
+    public function setCanBeImpersonated($canBeImpersonated)
+    {
+        $this->canBeImpersonated = $canBeImpersonated;
+    }
+
     public function setDateCreated($dateCreated)
     {
         $this->dateCreated = $dateCreated;

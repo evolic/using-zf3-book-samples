@@ -7,8 +7,8 @@ use User\Service\RbacManager;
 use User\Controller\Plugin\AccessPlugin;
 
 /**
- * This is the factory for AccessPlugin. Its purpose is to instantiate the plugin
- * and inject dependencies into its constructor.
+ * This is the factory for AccessPlugin.
+ * Its purpose is to instantiate the plugin and inject dependencies into its constructor.
  */
 class AccessPluginFactory implements FactoryInterface
 {

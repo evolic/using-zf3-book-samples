@@ -1,6 +1,11 @@
 <?php
 namespace Application\Service;
 
+use User\Service\ImpersonateService;
+use User\Service\RbacManager;
+use Zend\Authentication\AuthenticationService;
+use Zend\View\Helper\Url as UrlHelper;
+
 /**
  * This service is responsible for determining which items should be in the main menu.
  * The items may be different depending on whether the user is authenticated or not.
@@ -9,32 +14,46 @@ class NavManager
 {
     /**
      * Auth service.
-     * @var Zend\Authentication\Authentication
+     *
+     * @var AuthenticationService
      */
     private $authService;
-    
+
+    /**
+     * @var ImpersonateService
+     */
+    private $impersonateService;
+
     /**
      * Url view helper.
-     * @var Zend\View\Helper\Url
+     *
+     * @var UrlHelper
      */
     private $urlHelper;
-    
+
     /**
      * RBAC manager.
-     * @var User\Service\RbacManager
+     *
+     * @var RbacManager
      */
     private $rbacManager;
-    
+
     /**
      * Constructs the service.
      */
-    public function __construct($authService, $urlHelper, $rbacManager) 
+    public function __construct(
+        AuthenticationService $authService,
+        ImpersonateService $impersonateService,
+        UrlHelper $urlHelper,
+        RbacManager $rbacManager
+    )
     {
-        $this->authService = $authService;
-        $this->urlHelper = $urlHelper;
-        $this->rbacManager = $rbacManager;
+        $this->authService          = $authService;
+        $this->impersonateService   = $impersonateService;
+        $this->urlHelper            = $urlHelper;
+        $this->rbacManager          = $rbacManager;
     }
-    
+
     /**
      * This method returns menu items depending on whether user has logged in or not.
      */
@@ -57,7 +76,7 @@ class NavManager
         
         // Display "Login" menu item for not authorized user only. On the other hand,
         // display "Admin" and "Logout" menu items only for authorized users.
-        if (!$this->authService->hasIdentity()) {
+        if (! $this->authService->hasIdentity()) {
             $items[] = [
                 'id' => 'login',
                 'label' => 'Sign in',
@@ -65,7 +84,6 @@ class NavManager
                 'float' => 'right'
             ];
         } else {
-            
             // Determine which items must be displayed in Admin dropdown.
             $adminDropdownItems = [];
             
@@ -100,9 +118,17 @@ class NavManager
                     'dropdown' => $adminDropdownItems
                 ];
             }
-            
+
+            if ($this->impersonateService->hasIdentity()) {
+                $link = $url('impersonate', ['action' => 'unimpersonate']);
+                $text = 'Stop impersonation';
+            } else {
+                $link = $url('logout');
+                $text = 'Sign out';
+            }
+
             $items[] = [
-                'id' => 'logout',
+                'id' => 'user-profile',
                 'label' => $this->authService->getIdentity(),
                 'float' => 'right',
                 'dropdown' => [
@@ -113,8 +139,8 @@ class NavManager
                     ],
                     [
                         'id' => 'logout',
-                        'label' => 'Sign out',
-                        'link' => $url('logout')
+                        'label' => $text,
+                        'link' => $link
                     ],
                 ]
             ];

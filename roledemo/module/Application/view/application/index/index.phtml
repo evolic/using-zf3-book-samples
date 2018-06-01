@@ -10,6 +10,8 @@ $this->pageBreadcrumbs()->setItems([
 
 <h1>Welcome</h1>
 
+<?= $this->partial('partial/flash-messages.phtml', 'application'); ?>
+
 <p>
     This is the Role Demo application powered by Zend Framework 3. It is based on User Demo sample. 
     It demonstrates how to implement role-based access control.

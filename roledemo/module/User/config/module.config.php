@@ -90,11 +90,25 @@ return [
                     ],
                 ],
             ],
+            'impersonate' => [
+                'type'    => Segment::class,
+                'options' => [
+                    'route'    => '/impersonate[/:action[/:id]]',
+                    'constraints' => [
+                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                        'id' => '[a-zA-Z0-9_-]*',
+                    ],
+                    'defaults' => [
+                        'controller'    => Controller\ImpersonateController::class,
+                    ],
+                ],
+            ],
         ],
     ],
     'controllers' => [
         'factories' => [
             Controller\AuthController::class => Controller\Factory\AuthControllerFactory::class,
+            Controller\ImpersonateController::class => Controller\Factory\ImpersonateControllerFactory::class,
             Controller\PermissionController::class => Controller\Factory\PermissionControllerFactory::class,
             Controller\RoleController::class => Controller\Factory\RoleControllerFactory::class,    
             Controller\UserController::class => Controller\Factory\UserControllerFactory::class, 
@@ -130,6 +144,10 @@ return [
                 // Allow access to authenticated users having "permission.manage" permission.
                 ['actions' => '*', 'allow' => '+permission.manage']
             ],
+            Controller\ImpersonateController::class => [
+                // Allow access to authenticated users having "permission.manage" permission.
+                ['actions' => '*', 'allow' => '+user.manage']
+            ],
         ]
     ],
     'service_manager' => [
@@ -137,6 +155,8 @@ return [
             \Zend\Authentication\AuthenticationService::class => Service\Factory\AuthenticationServiceFactory::class,
             Service\AuthAdapter::class => Service\Factory\AuthAdapterFactory::class,
             Service\AuthManager::class => Service\Factory\AuthManagerFactory::class,
+            Service\ImpersonateManager::class => Service\Factory\ImpersonateManagerFactory::class,
+            Service\ImpersonateService::class => Service\Factory\ImpersonateServiceFactory::class,
             Service\PermissionManager::class => Service\Factory\PermissionManagerFactory::class,
             Service\RbacManager::class => Service\Factory\RbacManagerFactory::class,
             Service\RoleManager::class => Service\Factory\RoleManagerFactory::class,
@@ -153,10 +173,12 @@ return [
         'factories' => [
             View\Helper\Access::class => View\Helper\Factory\AccessFactory::class,
             View\Helper\CurrentUser::class => View\Helper\Factory\CurrentUserFactory::class,
+            View\Helper\ImpersonatedByUser::class => View\Helper\Factory\ImpersonatedByUserFactory::class,
         ],
         'aliases' => [
             'access' => View\Helper\Access::class,
             'currentUser' => View\Helper\CurrentUser::class,
+            'impersonatedByUser' => View\Helper\ImpersonatedByUser::class,
         ],
     ],
     'doctrine' => [

@@ -88,6 +88,8 @@ class RoleManager
         
         $role->setName($data['name']);
         $role->setDescription($data['description']);
+        $role->setCanImpersonate($data['canImpersonate']);
+        $role->setCanBeImpersonated($data['canBeImpersonated']);
 
         // clear parent roles so we don't populate database twice
         $role->clearParentRoles();
@@ -148,6 +150,8 @@ class RoleManager
                     'permission.manage',
                     'profile.any.view',
                 ],
+                'canImpersonate' => true,
+                'canBeImpersonated' => false,
             ],
             'Guest' => [
                 'description' => 'A person who can log in and view own profile.',
@@ -155,6 +159,8 @@ class RoleManager
                 'permissions' => [
                     'profile.own.view',
                 ],
+                'canImpersonate' => false,
+                'canBeImpersonated' => true,
             ],
         ];
         

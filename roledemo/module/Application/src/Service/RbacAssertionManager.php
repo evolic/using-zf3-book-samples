@@ -37,9 +37,10 @@ class RbacAssertionManager
     {
         $currentUser = $this->entityManager->getRepository(User::class)
                 ->findOneByEmail($this->authService->getIdentity());
-        
-        if ($permission=='profile.own.view' && $params['user']->getId()==$currentUser->getId())
+
+        if ($permission == 'profile.own.view' && $params['user']->getId() == $currentUser->getId()) {
             return true;
+        }
         
         return false;
     }

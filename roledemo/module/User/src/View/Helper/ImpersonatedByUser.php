@@ -2,14 +2,14 @@
 namespace User\View\Helper;
 
 use Doctrine\ORM\EntityManager;
-use Zend\Authentication\AuthenticationService;
 use Zend\View\Helper\AbstractHelper;
 use User\Entity\User;
+use User\Service\ImpersonateService;
 
 /**
- * This view helper is used for retrieving the User entity of currently logged in user.
+ * This view helper is used for retrieving the User entity of the user switched by impersonation.
  */
-class CurrentUser extends AbstractHelper 
+class ImpersonatedByUser extends AbstractHelper
 {
     /**
      * Entity manager.
@@ -17,14 +17,14 @@ class CurrentUser extends AbstractHelper
      * @var EntityManager
      */
     private $entityManager;
-    
+
     /**
-     * Authentication service.
+     * Impersonation service.
      *
-     * @var AuthenticationService
+     * @var ImpersonateService
      */
-    private $authService;
-    
+    private $impersonateService;
+
     /**
      * Previously fetched User entity.
      * @var \User\Entity\User
@@ -34,18 +34,19 @@ class CurrentUser extends AbstractHelper
     /**
      * Constructor.
      *
-     * @param  EntityManager          $entityManager
-     * @param  AuthenticationService  $authService
+     * @param  EntityManager       $entityManager
+     * @param  ImpersonateService  $impersonateService
      */
-    public function __construct(EntityManager $entityManager, AuthenticationService $authService)
+    public function __construct(EntityManager $entityManager, ImpersonateService $impersonateService)
     {
-        $this->entityManager = $entityManager;
-        $this->authService = $authService;
+        $this->entityManager        = $entityManager;
+        $this->impersonateService   = $impersonateService;
     }
     
     /**
-     * Returns the current User or null if not logged in.
-     * @param bool $useCachedUser If true, the User entity is fetched only on the first call (and cached on subsequent calls).
+     * Returns the User, who impersonated another user or null if non user had been impersonated.
+     *
+     * @param  bool  $useCachedUser If true, the User entity is fetched only on the first call (and cached on subsequent calls).
      * @return User|null
      */
     public function __invoke($useCachedUser = true)
@@ -56,10 +57,10 @@ class CurrentUser extends AbstractHelper
         }
 
         // Check if user is logged in.
-        if ($this->authService->hasIdentity()) {
+        if ($this->impersonateService->hasIdentity()) {
             // Fetch User entity from database.
             $this->user = $this->entityManager->getRepository(User::class)->findOneBy(array(
-                'email' => $this->authService->getIdentity()
+                'email' => $this->impersonateService->getIdentity()
             ));
 
             if ($this->user == null) {

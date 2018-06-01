@@ -4,6 +4,7 @@ namespace Application\Controller;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use User\Entity\User;
+use Doctrine\ORM\EntityManager;
 
 /**
  * This is the main controller class of the User Demo application. It contains
@@ -13,14 +14,17 @@ class IndexController extends AbstractActionController
 {
     /**
      * Entity manager.
-     * @var Doctrine\ORM\EntityManager
+     *
+     * @var EntityManager
      */
     private $entityManager;
     
     /**
      * Constructor. Its purpose is to inject dependencies into the controller.
+     *
+     * @param  EntityManager  $entityManager
      */
-    public function __construct($entityManager) 
+    public function __construct(EntityManager $entityManager)
     {
        $this->entityManager = $entityManager;
     }
@@ -57,7 +61,7 @@ class IndexController extends AbstractActionController
     {
         $id = $this->params()->fromRoute('id');
         
-        if ($id!=null) {
+        if ($id != null) {
             $user = $this->entityManager->getRepository(User::class)
                     ->find($id);
         } else {

@@ -2,6 +2,8 @@
 namespace User\Service;
 
 use Zend\Authentication\Result;
+use Zend\Session\SessionManager;
+use User\Service\RbacManager;
 
 /**
  * The AuthManager service is responsible for user's login/logout and simple access 
@@ -23,7 +25,7 @@ class AuthManager
     
     /**
      * Session manager.
-     * @var Zend\Session\SessionManager
+     * @var SessionManager
      */
     private $sessionManager;
     
@@ -35,7 +37,7 @@ class AuthManager
     
     /**
      * RBAC manager.
-     * @var User\Service\RbacManager
+     * @var RbacManager
      */
     private $rbacManager;
     
@@ -58,20 +60,26 @@ class AuthManager
     {   
         // Check if user has already logged in. If so, do not allow to log in 
         // twice.
-        if ($this->authService->getIdentity()!=null) {
+        if ($this->authService->getIdentity() != null) {
             throw new \Exception('Already logged in');
         }
             
         // Authenticate with login/password.
         $authAdapter = $this->authService->getAdapter();
+
         $authAdapter->setEmail($email);
         $authAdapter->setPassword($password);
+
         $result = $this->authService->authenticate();
+
+        if ($result->getCode() == Result::SUCCESS) {
+            $this->sessionManager->regenerateId(true);
+        }
 
         // If user wants to "remember him", we will make session to expire in 
         // one month. By default session expires in 1 hour (as specified in our 
         // config/global.php file).
-        if ($result->getCode()==Result::SUCCESS && $rememberMe) {
+        if ($result->getCode() == Result::SUCCESS && $rememberMe) {
             // Session cookie will expire in 1 month (30 days).
             $this->sessionManager->rememberMe(60*60*24*30);
         }
@@ -85,12 +93,14 @@ class AuthManager
     public function logout()
     {
         // Allow to log out only when user is logged in.
-        if ($this->authService->getIdentity()==null) {
+        if ($this->authService->getIdentity() == null) {
             throw new \Exception('The user is not logged in');
         }
-        
+
         // Remove identity from session.
-        $this->authService->clearIdentity();               
+        $this->authService->clearIdentity();
+
+        $this->sessionManager->regenerateId(true);
     }
     
     /**

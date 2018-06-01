@@ -12,19 +12,19 @@ class CurrentUserPlugin extends AbstractPlugin
 {
     /**
      * Entity manager.
-     * @var Doctrine\ORM\EntityManager 
+     * @var \Doctrine\ORM\EntityManager
      */
     private $entityManager;
     
     /**
      * Authentication service.
-     * @var Zend\Authentication\AuthenticationService 
+     * @var \Zend\Authentication\AuthenticationService
      */
     private $authService;
     
     /**
      * Logged in user.
-     * @var User\Entity\User
+     * @var \User\Entity\User
      */
     private $user = null;
     
@@ -43,27 +43,28 @@ class CurrentUserPlugin extends AbstractPlugin
      * @return User|null
      */
     public function __invoke($useCachedUser = true)
-    {        
+    {
         // If current user is already fetched, return it.
-        if ($useCachedUser && $this->user!==null)
+        if ($useCachedUser && $this->user !== null) {
             return $this->user;
-        
+        }
+
         // Check if user is logged in.
         if ($this->authService->hasIdentity()) {
-            
             // Fetch User entity from database.
             $this->user = $this->entityManager->getRepository(User::class)
                     ->findOneByEmail($this->authService->getIdentity());
-            if ($this->user==null) {
+
+            if ($this->user == null) {
                 // Oops.. the identity presents in session, but there is no such user in database.
                 // We throw an exception, because this is a possible security problem. 
                 throw new \Exception('Not found user with such email');
             }
-            
+
             // Return found User.
             return $this->user;
         }
-        
+
         return null;
     }
 }

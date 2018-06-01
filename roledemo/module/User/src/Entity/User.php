@@ -3,6 +3,7 @@ namespace User\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use User\Entity\Role;
 
 /**
  * This class represents a registered user.
@@ -258,19 +259,53 @@ class User
     public function getRolesAsString()
     {
         $roleList = '';
-        
+
         $count = count($this->roles);
         $i = 0;
+
         foreach ($this->roles as $role) {
             $roleList .= $role->getName();
-            if ($i<$count-1)
+
+            if ($i<$count-1) {
                 $roleList .= ', ';
+            }
+
             $i++;
         }
-        
+
         return $roleList;
     }
-    
+
+    /**
+     * Returns the string of assigned role names.
+     */
+    public function canBeImpersonated()
+    {
+        /** @var Role $role */
+        foreach ($this->roles as $role) {
+            if (! $role->canBeImpersonated()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns the string of assigned role names.
+     */
+    public function canImpersonate()
+    {
+        /** @var Role $role */
+        foreach ($this->roles as $role) {
+            if ($role->canImpersonate()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Assigns a role to user.
      */

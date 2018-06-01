@@ -1,15 +1,19 @@
 <?php
+use User\Entity\User;
+
 $this->headTitle('Users');
 
 $this->mainMenu()->setActiveItemId('users');
 
 $this->pageBreadcrumbs()->setItems([
-            'Home'=>$this->url('home'),
-            'Manage Users'=>$this->url('users'),
-            ]);
+    'Home'=>$this->url('home'),
+    'Manage Users'=>$this->url('users'),
+]);
 ?>
 
 <h1>Manage Users</h1>
+
+<?= $this->partial('partial/flash-messages.phtml', 'application'); ?>
 
 <p>
 <a class="btn btn-default" href="
@@ -29,9 +33,10 @@ $this->pageBreadcrumbs()->setItems([
         <th>Status</th>        
         <th>Actions</th>        
     </tr>
-    
+
+    <?php /** @var User $user */?>
     <?php foreach ($users as $user): ?>
-    
+
     <tr>
         <td><?= $this->escapeHtml($user->getId()); ?></td>
         <td>
@@ -56,6 +61,17 @@ $this->pageBreadcrumbs()->setItems([
                     ['action'=>'change-password', 'id'=>$user->getId()]); ?>">
                 <span class="glyphicon glyphicon-asterisk"></span> Change Password
             </a>
+            <?php
+                if ($this->currentUser()->getEmail() !== $user->getEmail()
+                    && $this->currentUser()->canImpersonate()
+                    && $user->canBeImpersonated()
+                ):
+            ?>
+                <a class="btn btn-info" href="<?= $this->url('impersonate',
+                    ['action'=>'impersonate', 'id'=>$user->getId()]); ?>">
+                    <span class="glyphicon glyphicon-user" ></span> Impersonate
+                </a>
+            <?php endif; ?>
         </td>    
     </tr>
         

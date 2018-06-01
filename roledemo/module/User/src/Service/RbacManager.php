@@ -14,25 +14,25 @@ class RbacManager
 {
     /**
      * Doctrine entity manager.
-     * @var Doctrine\ORM\EntityManager
+     * @var \Doctrine\ORM\EntityManager
      */
     private $entityManager; 
     
     /**
      * RBAC service.
-     * @var Zend\Permissions\Rbac\Rbac
+     * @var \Zend\Permissions\Rbac\Rbac
      */
     private $rbac;
     
     /**
      * Auth service.
-     * @var Zend\Authentication\AuthenticationService 
+     * @var \Zend\Authentication\AuthenticationService
      */
     private $authService;
     
     /**
      * Filesystem cache.
-     * @var Zend\Cache\Storage\StorageInterface
+     * @var \Zend\Cache\Storage\StorageInterface
      */
     private $cache;
     
@@ -106,26 +106,27 @@ class RbacManager
     
     /**
      * Checks whether the given user has permission.
+     *
      * @param User|null $user
      * @param string $permission
      * @param array|null $params
      */
     public function isGranted($user, $permission, $params = null)
     {
-        if ($this->rbac==null) {
+        if ($this->rbac == null) {
             $this->init();
         }
         
-        if ($user==null) {
-            
+        if ($user == null) {
             $identity = $this->authService->getIdentity();
-            if ($identity==null) {
+
+            if ($identity == null) {
                 return false;
             }
             
             $user = $this->entityManager->getRepository(User::class)
                     ->findOneByEmail($identity);
-            if ($user==null) {
+            if ($user == null) {
                 // Oops.. the identity presents in session, but there is no such user in database.
                 // We throw an exception, because this is a possible security problem.
                 throw new \Exception('There is no user with such identity');
@@ -149,6 +150,7 @@ class RbacManager
             // Since we are pulling the user from the database again the init() function above is overridden?
             // we don't seem to be taking into account the parent roles without the following code
             $parentRoles = $role->getParentRoles();
+
             foreach ($parentRoles as $parentRole) {
                 if ($this->rbac->isGranted($parentRole->getName(), $permission)) {
                     return true;

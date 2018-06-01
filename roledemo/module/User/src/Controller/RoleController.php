@@ -1,12 +1,14 @@
 <?php
 namespace User\Controller;
 
+use Doctrine\ORM\EntityManager;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use User\Entity\Role;
 use User\Entity\Permission;
 use User\Form\RoleForm;
 use User\Form\RolePermissionsForm;
+use User\Service\RoleManager;
 
 /**
  * This controller is responsible for role management (adding, editing, 
@@ -16,23 +18,28 @@ class RoleController extends AbstractActionController
 {
     /**
      * Entity manager.
-     * @var Doctrine\ORM\EntityManager
+     *
+     * @var EntityManager
      */
     private $entityManager;
     
     /**
      * Role manager.
-     * @var User\Service\RoleManager 
+     *
+     * @var RoleManager
      */
     private $roleManager;
     
     /**
-     * Constructor. 
+     * Constructor.
+     *
+     * @param  EntityManager  $entityManager
+     * @param  RoleManager    $roleManager
      */
     public function __construct($entityManager, $roleManager)
     {
-        $this->entityManager = $entityManager;
-        $this->roleManager = $roleManager;
+        $this->entityManager    = $entityManager;
+        $this->roleManager      = $roleManager;
     }
     
     /**
@@ -137,7 +144,8 @@ class RoleController extends AbstractActionController
             $this->getResponse()->setStatusCode(404);
             return;
         }
-        
+
+        /** @var Role $role */
         $role = $this->entityManager->getRepository(Role::class)
                 ->find($id);
         
@@ -145,23 +153,24 @@ class RoleController extends AbstractActionController
             $this->getResponse()->setStatusCode(404);
             return;
         }
-        
+
         // Create form
         $form = new RoleForm('update', $this->entityManager, $role);
-        
+
         $roleList = [];
         $selectedRoles = [];
-        $roles = $this->entityManager->getRepository(Role::class)
-                ->findBy([], ['name'=>'ASC']);
+        $roles = $this->entityManager->getRepository(Role::class)->findBy([], ['name'=>'ASC']);
+
         foreach ($roles as $role2) {
-            
-            if ($role2->getId()==$role->getId())
+            if ($role2->getId() == $role->getId()) {
                 continue; // Do not inherit from ourselves
+            }
             
             $roleList[$role2->getId()] = $role2->getName();
             
-            if ($role->hasParent($role2))
+            if ($role->hasParent($role2)) {
                 $selectedRoles[] = $role2->getId();
+            }
         }
         $form->get('inherit_roles')->setValueOptions($roleList);
         
@@ -169,14 +178,13 @@ class RoleController extends AbstractActionController
         
         // Check if user has submitted the form
         if ($this->getRequest()->isPost()) {
-            
             // Fill in the form with POST data
             $data = $this->params()->fromPost();            
-            
+
             $form->setData($data);
-            
+
             // Validate form
-            if($form->isValid()) {
+            if ($form->isValid()) {
                 
                 // Get filtered and validated data
                 $data = $form->getData();
@@ -191,10 +199,12 @@ class RoleController extends AbstractActionController
                 return $this->redirect()->toRoute('roles', ['action'=>'index']);                
             }               
         } else {
-            $form->setData(array(
-                    'name'=>$role->getName(),
-                    'description'=>$role->getDescription()     
-                ));
+            $form->setData([
+                'name'              => $role->getName(),
+                'description'       => $role->getDescription(),
+                'canImpersonate'    => $role->getCanImpersonate(),
+                'canBeImpersonated' => $role->getCanBeImpersonated(),
+            ]);
         }
         
         return new ViewModel([

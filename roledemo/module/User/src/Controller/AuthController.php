@@ -2,12 +2,15 @@
 
 namespace User\Controller;
 
+use Doctrine\ORM\EntityManager;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Zend\Authentication\Result;
 use Zend\Uri\Uri;
-use User\Form\LoginForm;
 use User\Entity\User;
+use User\Form\LoginForm;
+use User\Service\AuthManager;
+use User\Service\UserManager;
 
 /**
  * This controller is responsible for letting the user to log in and log out.
@@ -16,26 +19,37 @@ class AuthController extends AbstractActionController
 {
     /**
      * Entity manager.
-     * @var Doctrine\ORM\EntityManager
+     *
+     * @var EntityManager
      */
     private $entityManager;
 
     /**
      * Auth manager.
-     * @var User\Service\AuthManager
+     *
+     * @var AuthManager
      */
     private $authManager;
 
     /**
      * User manager.
-     * @var User\Service\UserManager
+     *
+     * @var UserManager
      */
     private $userManager;
 
     /**
      * Constructor.
+     *
+     * @param  EntityManager  $entityManager
+     * @param  AuthManager    $authManager
+     * @param  UserManager    $userManager
      */
-    public function __construct($entityManager, $authManager, $userManager)
+    public function __construct(
+        EntityManager $entityManager,
+        AuthManager $authManager,
+        UserManager $userManager
+    )
     {
         $this->entityManager = $entityManager;
         $this->authManager = $authManager;
@@ -48,14 +62,14 @@ class AuthController extends AbstractActionController
     public function loginAction()
     {
         // Retrieve the redirect URL (if passed). We will redirect the user to this
-        // URL after successfull login.
-        $redirectUrl = (string)$this->params()->fromQuery('redirectUrl', '');
-        if (strlen($redirectUrl)>2048) {
+        // URL after successful login.
+        $redirectUrl = (string) $this->params()->fromQuery('redirectUrl', '');
+
+        if (strlen($redirectUrl) > 2048) {
             throw new \Exception("Too long redirectUrl argument passed");
         }
 
-        // Check if we do not have users in database at all. If so, create
-        // the 'Admin' user.
+        // Check if we do not have users in database at all. If so, create the 'Admin' user.
         $this->userManager->createAdminUserIfNotExists();
 
         // Create login form
@@ -75,21 +89,22 @@ class AuthController extends AbstractActionController
 
             // Validate form
             if($form->isValid()) {
-
                 // Get filtered and validated data
                 $data = $form->getData();
 
                 // Perform login attempt.
-                $result = $this->authManager->login($data['email'],
-                        $data['password'], $data['remember_me']);
+                $result = $this->authManager->login(
+                    $data['email'],
+                    $data['password'],
+                    $data['remember_me']
+                );
 
                 // Check result.
                 if ($result->getCode() == Result::SUCCESS) {
-
                     // Get redirect URL.
                     $redirectUrl = $this->params()->fromPost('redirect_url', '');
 
-                    if (!empty($redirectUrl)) {
+                    if (! empty($redirectUrl)) {
                         // The below check is to prevent possible redirect attack
                         // (if someone tries to redirect user to another domain).
                         $uri = new Uri($redirectUrl);
@@ -99,7 +114,7 @@ class AuthController extends AbstractActionController
 
                     // If redirect URL is provided, redirect the user to that URL;
                     // otherwise redirect to Home page.
-                    if(empty($redirectUrl)) {
+                    if (empty($redirectUrl)) {
                         return $this->redirect()->toRoute('home');
                     } else {
                         $this->redirect()->toUrl($redirectUrl);

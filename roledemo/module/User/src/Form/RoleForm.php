@@ -2,6 +2,7 @@
 namespace User\Form;
 
 use Zend\Form\Form;
+use Zend\Form\Element\Checkbox;
 use Zend\InputFilter\InputFilter;
 use User\Validator\RoleExistsValidator;
 
@@ -63,7 +64,7 @@ class RoleForm extends Form
                 'label' => 'Description',
             ],
         ]);
-        
+
         // Add "inherit_roles" field
         $this->add([            
             'type'  => 'select',
@@ -76,7 +77,31 @@ class RoleForm extends Form
                 'label' => 'Optionally inherit permissions from these role(s)'
             ],
         ]);
-                        
+
+        // Add "name" field
+        $this->add([
+            'type'  => Checkbox::class,
+            'name' => 'canImpersonate',
+            'attributes' => [
+                'id' => 'canImpersonate'
+            ],
+            'options' => [
+                'label' => 'Can impersonate',
+            ],
+        ]);
+
+        // Add "name" field
+        $this->add([
+            'type'  => Checkbox::class,
+            'name' => 'canBeImpersonated',
+            'attributes' => [
+                'id' => 'canBeImpersonated'
+            ],
+            'options' => [
+                'label' => 'Can be impersonated',
+            ],
+        ]);
+
         // Add the Submit button
         $this->add([
             'type'  => 'submit',

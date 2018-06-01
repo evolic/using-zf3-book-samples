@@ -11,6 +11,8 @@ $this->pageBreadcrumbs()->setItems([
 
 <h1>About</h1>
 
+<?= $this->partial('partial/flash-messages.phtml', 'application'); ?>
+
 <p>
     Application name: <?= $this->escapeHtml($appName) ?>
 </p>

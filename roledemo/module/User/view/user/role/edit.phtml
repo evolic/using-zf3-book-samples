@@ -12,17 +12,41 @@ $this->pageBreadcrumbs()->setItems([
 $form->get('name')->setAttributes([
     'class'=>'form-control', 
     'placeholder'=>'Enter name'
-    ]);
+]);
 
 $form->get('description')->setAttributes([
     'class'=>'form-control', 
     'placeholder'=>'Enter description'
-    ]);
+]);
 
 $form->get('inherit_roles')->setAttributes([
     'class'=>'form-control', 
-    ]);
+]);
 
+/** @var \Zend\Form\Element\Checkbox $canImpersonate */
+$canImpersonate = $form->get('canImpersonate');
+
+$canImpersonateAttributes = [];
+$canImpersonateAttributes['style'] = 'display: block;';
+
+if ($canImpersonate->isChecked()) {
+    $canImpersonateAttributes['checked'] = 'checked';
+}
+
+$canImpersonate->setAttributes($canImpersonateAttributes);
+
+
+/** @var \Zend\Form\Element\Checkbox $canBeImpersonated */
+$canBeImpersonated = $form->get('canBeImpersonated');
+
+$canBeImpersonatedAttributes = [];
+$canBeImpersonatedAttributes['style'] = 'display: block;';
+
+if ($canBeImpersonated->isChecked()) {
+    $canBeImpersonatedAttributes['checked'] = 'checked';
+}
+
+$canBeImpersonated->setAttributes($canBeImpersonatedAttributes);
 
 $form->get('submit')
         ->setAttributes(['class'=>'btn btn-primary'])
@@ -59,6 +83,18 @@ $form->prepare();
             <?= $this->formLabel($form->get('inherit_roles')); ?>
             <?= $this->formElement($form->get('inherit_roles')); ?>
             <?= $this->formElementErrors($form->get('inherit_roles')); ?>
+        </div>
+
+        <div class="form-group">
+            <?= $this->formLabel($form->get('canImpersonate')); ?>
+            <?= $this->formElement($form->get('canImpersonate')); ?>
+            <?= $this->formElementErrors($form->get('canImpersonate')); ?>
+        </div>
+
+        <div class="form-group">
+            <?= $this->formLabel($form->get('canBeImpersonated')); ?>
+            <?= $this->formElement($form->get('canBeImpersonated')); ?>
+            <?= $this->formElementErrors($form->get('canBeImpersonated')); ?>
         </div>
         
         <?= $this->formElement($form->get('csrf')); ?>

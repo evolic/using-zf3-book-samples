@@ -1,6 +1,7 @@
 <?php
 namespace User\Controller\Plugin;
 
+use User\Service\RbacManager;
 use Zend\Mvc\Controller\Plugin\AbstractPlugin;
 
 /**
@@ -8,6 +9,9 @@ use Zend\Mvc\Controller\Plugin\AbstractPlugin;
  */
 class AccessPlugin extends AbstractPlugin
 {
+    /**
+     * @var RbacManager
+     */
     private $rbacManager;
     
     public function __construct($rbacManager)
