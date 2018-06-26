@@ -12,6 +12,8 @@ use Zend\Log\Writer as LogWriter;
 use Zend\Router\Http\Literal;
 use Zend\Router\Http\Segment;
 use Zend\ServiceManager\Factory\InvokableFactory;
+use ZF\Apigility\Admin;
+use ZF\Apigility\Doctrine\Admin as DoctrineAdmin;
 
 return [
     'router' => [
@@ -78,6 +80,137 @@ return [
                 ['actions' => ['index', 'about'], 'allow' => '*'],
                 // Allow authorized users to visit "settings" action
                 ['actions' => ['settings'], 'allow' => '@']
+            ],
+            // Apigility Admin controllers
+            Admin\Controller\App::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\AppController::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\ApigilityVersionController::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\Authentication::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\AuthenticationController::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\AuthenticationType::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\Authorization::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\AuthorizationController::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\CacheEnabledController::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\Config::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\ConfigController::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\Dashboard::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\DbAutodiscovery::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\DoctrineAdapter::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\Documentation::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\Filters::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\FsPermissionsController::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\Hydrators::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\InputFilter::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\ModuleConfig::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\ModuleConfigController::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\ModuleCreation::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\ModuleCreationController::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\OAuth2Authentication::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\Package::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\Source::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\Validators::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            Admin\Controller\Versioning::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+
+            // Apigility+Doctrine ORM Admin controllers
+            DoctrineAdmin\Controller\DoctrineAutodiscovery::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            DoctrineAdmin\Controller\DoctrineRestService::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            DoctrineAdmin\Controller\DoctrineRpcService::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
+            ],
+            DoctrineAdmin\Controller\DoctrineMetadataService::class => [
+                // Allow access to authenticated users having the "role.manage" permission.
+                ['actions' => '*', 'allow' => '+api.manage']
             ],
         ]
     ],
