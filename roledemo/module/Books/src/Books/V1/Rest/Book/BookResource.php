@@ -10,7 +10,7 @@ class BookResource extends GeneralResource
     /**
      * @param  Book  $entity
      */
-    function setRelations(&$entity)
+    protected function setRelations(&$entity)
     {
         /** @var Book $entity */
         /** @var Author $author */

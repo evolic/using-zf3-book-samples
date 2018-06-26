@@ -35,6 +35,15 @@ return array(
             ],
             'use_generated_hydrator' => true,
         ),
+        'Books\\V1\\Rest\\AuthorBook\\BookHydrator' => array(
+            'entity_class' => 'Books\\Entity\\Book',
+            'object_manager' => 'doctrine.entitymanager.orm_default',
+            'by_value' => true,
+            'strategies' => [
+                'author' => 'ZF\Doctrine\Hydrator\Strategy\EntityLink',
+            ],
+            'use_generated_hydrator' => true,
+        ),
     ),
     'service_manager' => array(
         'factories' => array(),
@@ -59,12 +68,22 @@ return array(
                     ),
                 ),
             ),
+            'books.rest.doctrine.author-book' => array(
+                'type' => 'Segment',
+                'options' => array(
+                    'route' => '/authors/:author_id/books[/:book_id]',
+                    'defaults' => array(
+                        'controller' => 'Books\\V1\\Rest\\AuthorBook\\Controller',
+                    ),
+                ),
+            ),
         ),
     ),
     'zf-versioning' => array(
         'uri' => array(
             0 => 'books.rest.doctrine.author',
             1 => 'books.rest.doctrine.book',
+            2 => 'books.rest.doctrine.author-book',
         ),
     ),
     'zf-rest' => array(
@@ -84,7 +103,11 @@ return array(
                 0 => 'GET',
                 1 => 'POST',
             ),
-            'collection_query_whitelist' => array(),
+            'collection_query_whitelist' => [
+                'first_name',
+                'last_name',
+                'alias',
+            ],
             'page_size' => '5',
             'page_size_param' => null,
             'entity_class' => 'Books\\Entity\\Author',
@@ -107,18 +130,47 @@ return array(
                 0 => 'GET',
                 1 => 'POST',
             ),
-            'collection_query_whitelist' => array(),
+            'collection_query_whitelist' => [
+                'title',
+                'author_id',
+            ],
             'page_size' => '5',
             'page_size_param' => null,
             'entity_class' => 'Books\\Entity\\Book',
             'collection_class' => 'Books\\V1\\Rest\\Book\\BookCollection',
             'service_name' => 'Book',
         ),
+        'Books\\V1\\Rest\\AuthorBook\\Controller' => array(
+            'listener' => 'Books\\V1\\Rest\\AuthorBook\\BookResource',
+            'route_name' => 'books.rest.doctrine.author-book',
+            'route_identifier_name' => 'book_id',
+            'entity_identifier_name' => 'id',
+            'collection_name' => 'books',
+            'entity_http_methods' => array(
+                0 => 'GET',
+                1 => 'PATCH',
+                2 => 'PUT',
+                3 => 'DELETE',
+            ),
+            'collection_http_methods' => array(
+                0 => 'GET',
+                1 => 'POST',
+            ),
+            'collection_query_whitelist' => [
+                'title',
+            ],
+            'page_size' => '5',
+            'page_size_param' => null,
+            'entity_class' => 'Books\\Entity\\Book',
+            'collection_class' => 'Books\\V1\\Rest\\AuthorBook\\BookCollection',
+            'service_name' => 'AuthorBook',
+        ),
     ),
     'zf-content-negotiation' => array(
         'controllers' => array(
             'Books\\V1\\Rest\\Author\\Controller' => 'HalJson',
             'Books\\V1\\Rest\\Book\\Controller' => 'HalJson',
+            'Books\\V1\\Rest\\AuthorBook\\Controller' => 'HalJson',
         ),
         'accept_whitelist' => array(
             'Books\\V1\\Rest\\Author\\Controller' => array(
@@ -131,6 +183,11 @@ return array(
                 1 => 'application/hal+json',
                 2 => 'application/json',
             ),
+            'Books\\V1\\Rest\\AuthorBook\\Controller' => array(
+                0 => 'application/vnd.books.v1+json',
+                1 => 'application/hal+json',
+                2 => 'application/json',
+            ),
         ),
         'content_type_whitelist' => array(
             'Books\\V1\\Rest\\Author\\Controller' => array(
@@ -138,6 +195,10 @@ return array(
                 1 => 'application/json',
             ),
             'Books\\V1\\Rest\\Book\\Controller' => array(
+                0 => 'application/vnd.books.v1+json',
+                1 => 'application/json',
+            ),
+            'Books\\V1\\Rest\\AuthorBook\\Controller' => array(
                 0 => 'application/vnd.books.v1+json',
                 1 => 'application/json',
             ),
@@ -167,6 +228,17 @@ return array(
                 'route_name' => 'books.rest.doctrine.book',
                 'is_collection' => true,
             ),
+            'Books\\Entity\\AuthorBook' => array(
+                'route_identifier_name' => 'book_id',
+                'entity_identifier_name' => 'id',
+                'route_name' => 'books.rest.doctrine.author-book',
+                'hydrator' => 'Books\\V1\\Rest\\AuthorBook\\BookHydrator',
+            ),
+            'Books\\V1\\Rest\\AuthorBook\\BookCollection' => array(
+                'entity_identifier_name' => 'id',
+                'route_name' => 'books.rest.doctrine.author-book',
+                'is_collection' => true,
+            ),
         ),
     ),
     'zf-apigility' => array(
@@ -179,6 +251,10 @@ return array(
                 'object_manager' => 'doctrine.entitymanager.orm_default',
                 'hydrator' => 'Books\\V1\\Rest\\Book\\BookHydrator',
             ),
+            'Books\\V1\\Rest\\AuthorBook\\BookResource' => array(
+                'object_manager' => 'doctrine.entitymanager.orm_default',
+                'hydrator' => 'Books\\V1\\Rest\\AuthorBook\\BookHydrator',
+            ),
         ),
     ),
     'zf-content-validation' => array(
@@ -186,6 +262,9 @@ return array(
             'input_filter' => 'Books\\V1\\Rest\\Author\\Validator',
         ),
         'Books\\V1\\Rest\\Book\\Controller' => array(
+            'input_filter' => 'Books\\V1\\Rest\\Book\\Validator',
+        ),
+        'Books\\V1\\Rest\\AuthorBook\\Controller' => array(
             'input_filter' => 'Books\\V1\\Rest\\Book\\Validator',
         ),
     ),
