@@ -134,7 +134,7 @@ class Author
      * @param  DateTime  $death_date
      * @return Author
      */
-    public function setDeathDate(DateTime $death_date): Author
+    public function setDeathDate(?DateTime $death_date): Author
     {
         $this->death_date = $death_date;
 
