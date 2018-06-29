@@ -1,4 +1,6 @@
 <?php
+use Zend\ServiceManager\Factory\InvokableFactory;
+
 return array(
     'doctrine' => array(
         'driver' => array(
@@ -22,7 +24,9 @@ return array(
             'object_manager' => 'doctrine.entitymanager.orm_default',
             'by_value' => true,
             'strategies' => [
-                'books' => 'ZF\Doctrine\Hydrator\Strategy\CollectionExtract',
+                'birth_date'    => 'Books\V1\Hydrator\Strategy\DateStrategy',
+                'death_date'    => 'Books\V1\Hydrator\Strategy\DateStrategy',
+                'books'         => 'ZF\Doctrine\Hydrator\Strategy\CollectionExtract',
             ],
             'use_generated_hydrator' => true,
         ),
@@ -45,8 +49,14 @@ return array(
             'use_generated_hydrator' => true,
         ),
     ),
+    'hydrators' => [
+        'factories' => [
+        ],
+    ],
     'service_manager' => array(
-        'factories' => array(),
+        'factories' => [
+            'Books\V1\Hydrator\Strategy\DateStrategy' => InvokableFactory::class,
+        ],
     ),
     'router' => array(
         'routes' => array(
