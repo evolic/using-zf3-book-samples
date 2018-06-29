@@ -1,6 +1,4 @@
 <?php
-use Zend\ServiceManager\Factory\InvokableFactory;
-
 return array(
     'doctrine' => array(
         'driver' => array(
@@ -23,40 +21,39 @@ return array(
             'entity_class' => 'Books\\Entity\\Author',
             'object_manager' => 'doctrine.entitymanager.orm_default',
             'by_value' => true,
-            'strategies' => [
-                'birth_date'    => 'Books\V1\Hydrator\Strategy\DateStrategy',
-                'death_date'    => 'Books\V1\Hydrator\Strategy\DateStrategy',
-                'books'         => 'ZF\Doctrine\Hydrator\Strategy\CollectionExtract',
-            ],
+            'strategies' => array(
+                'birth_date' => 'Books\\V1\\Hydrator\\Strategy\\DateStrategy',
+                'death_date' => 'Books\\V1\\Hydrator\\Strategy\\DateStrategy',
+                'books' => 'ZF\\Doctrine\\Hydrator\\Strategy\\CollectionExtract',
+            ),
             'use_generated_hydrator' => true,
         ),
         'Books\\V1\\Rest\\Book\\BookHydrator' => array(
             'entity_class' => 'Books\\Entity\\Book',
             'object_manager' => 'doctrine.entitymanager.orm_default',
             'by_value' => true,
-            'strategies' => [
-                'author' => 'ZF\Doctrine\Hydrator\Strategy\EntityLink',
-            ],
+            'strategies' => array(
+                'author' => 'ZF\\Doctrine\\Hydrator\\Strategy\\EntityLink',
+            ),
             'use_generated_hydrator' => true,
         ),
         'Books\\V1\\Rest\\AuthorBook\\BookHydrator' => array(
             'entity_class' => 'Books\\Entity\\Book',
             'object_manager' => 'doctrine.entitymanager.orm_default',
             'by_value' => true,
-            'strategies' => [
-                'author' => 'ZF\Doctrine\Hydrator\Strategy\EntityLink',
-            ],
+            'strategies' => array(
+                'author' => 'ZF\\Doctrine\\Hydrator\\Strategy\\EntityLink',
+            ),
             'use_generated_hydrator' => true,
         ),
     ),
-    'hydrators' => [
-        'factories' => [
-        ],
-    ],
+    'hydrators' => array(
+        'factories' => array(),
+    ),
     'service_manager' => array(
-        'factories' => [
-            'Books\V1\Hydrator\Strategy\DateStrategy' => InvokableFactory::class,
-        ],
+        'factories' => array(
+            'Books\\V1\\Hydrator\\Strategy\\DateStrategy' => 'Zend\\ServiceManager\\Factory\\InvokableFactory',
+        ),
     ),
     'router' => array(
         'routes' => array(
@@ -87,6 +84,16 @@ return array(
                     ),
                 ),
             ),
+            'books.rpc.hello' => array(
+                'type' => 'Segment',
+                'options' => array(
+                    'route' => '/hello',
+                    'defaults' => array(
+                        'controller' => 'Books\\V1\\Rpc\\Hello\\Controller',
+                        'action' => 'hello',
+                    ),
+                ),
+            ),
         ),
     ),
     'zf-versioning' => array(
@@ -94,6 +101,7 @@ return array(
             0 => 'books.rest.doctrine.author',
             1 => 'books.rest.doctrine.book',
             2 => 'books.rest.doctrine.author-book',
+            3 => 'books.rpc.hello',
         ),
     ),
     'zf-rest' => array(
@@ -113,11 +121,11 @@ return array(
                 0 => 'GET',
                 1 => 'POST',
             ),
-            'collection_query_whitelist' => [
-                'first_name',
-                'last_name',
-                'alias',
-            ],
+            'collection_query_whitelist' => array(
+                0 => 'first_name',
+                1 => 'last_name',
+                2 => 'alias',
+            ),
             'page_size' => '5',
             'page_size_param' => null,
             'entity_class' => 'Books\\Entity\\Author',
@@ -140,10 +148,10 @@ return array(
                 0 => 'GET',
                 1 => 'POST',
             ),
-            'collection_query_whitelist' => [
-                'title',
-                'author_id',
-            ],
+            'collection_query_whitelist' => array(
+                0 => 'title',
+                1 => 'author_id',
+            ),
             'page_size' => '5',
             'page_size_param' => null,
             'entity_class' => 'Books\\Entity\\Book',
@@ -166,9 +174,9 @@ return array(
                 0 => 'GET',
                 1 => 'POST',
             ),
-            'collection_query_whitelist' => [
-                'title',
-            ],
+            'collection_query_whitelist' => array(
+                0 => 'title',
+            ),
             'page_size' => '5',
             'page_size_param' => null,
             'entity_class' => 'Books\\Entity\\Book',
@@ -181,6 +189,7 @@ return array(
             'Books\\V1\\Rest\\Author\\Controller' => 'HalJson',
             'Books\\V1\\Rest\\Book\\Controller' => 'HalJson',
             'Books\\V1\\Rest\\AuthorBook\\Controller' => 'HalJson',
+            'Books\\V1\\Rpc\\Hello\\Controller' => 'Json',
         ),
         'accept_whitelist' => array(
             'Books\\V1\\Rest\\Author\\Controller' => array(
@@ -198,6 +207,11 @@ return array(
                 1 => 'application/hal+json',
                 2 => 'application/json',
             ),
+            'Books\\V1\\Rpc\\Hello\\Controller' => array(
+                0 => 'application/vnd.books.v1+json',
+                1 => 'application/json',
+                2 => 'application/*+json',
+            ),
         ),
         'content_type_whitelist' => array(
             'Books\\V1\\Rest\\Author\\Controller' => array(
@@ -209,6 +223,10 @@ return array(
                 1 => 'application/json',
             ),
             'Books\\V1\\Rest\\AuthorBook\\Controller' => array(
+                0 => 'application/vnd.books.v1+json',
+                1 => 'application/json',
+            ),
+            'Books\\V1\\Rpc\\Hello\\Controller' => array(
                 0 => 'application/vnd.books.v1+json',
                 1 => 'application/json',
             ),
@@ -276,6 +294,9 @@ return array(
         ),
         'Books\\V1\\Rest\\AuthorBook\\Controller' => array(
             'input_filter' => 'Books\\V1\\Rest\\Book\\Validator',
+        ),
+        'Books\\V1\\Rpc\\Hello\\Controller' => array(
+            'input_filter' => 'Books\\V1\\Rpc\\Hello\\Validator',
         ),
     ),
     'input_filter_specs' => array(
@@ -403,6 +424,60 @@ return array(
                 'name' => 'author_id',
                 'field_type' => 'int',
             ),
+        ),
+        'Books\\V1\\Rpc\\Hello\\Validator' => array(
+            0 => array(
+                'required' => true,
+                'validators' => array(
+                    0 => array(
+                        'name' => 'Zend\\Validator\\StringLength',
+                        'options' => array(
+                            'max' => '127',
+                        ),
+                    ),
+                ),
+                'filters' => array(
+                    0 => array(
+                        'name' => 'Zend\\Filter\\StringTrim',
+                        'options' => array(),
+                    ),
+                    1 => array(
+                        'name' => 'Zend\\Filter\\StripTags',
+                        'options' => array(),
+                    ),
+                ),
+                'field_type' => 'String',
+                'name' => 'Greeting',
+                'description' => 'Sends greeting to an API',
+            ),
+        ),
+    ),
+    'controllers' => array(
+        'factories' => array(
+            'Books\\V1\\Rpc\\Hello\\Controller' => 'Books\\V1\\Rpc\\Hello\\HelloControllerFactory',
+        ),
+    ),
+    // The 'access_filter' key is used by the User module to restrict or permit
+    // access to certain controller actions for unauthorized visitors.
+    'access_filter' => [
+        'options' => [
+
+        ],
+        'controllers' => [
+            'Books\\V1\\Rpc\\Hello\\Controller' => [
+                // Allow access to all users.
+                ['actions' => '*', 'allow' => '*']
+            ],
+        ],
+    ],
+    'zf-rpc' => array(
+        'Books\\V1\\Rpc\\Hello\\Controller' => array(
+            'service_name' => 'Hello',
+            'http_methods' => array(
+                0 => 'GET',
+                1 => 'POST',
+            ),
+            'route_name' => 'books.rpc.hello',
         ),
     ),
 );

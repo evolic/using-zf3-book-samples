@@ -26,4 +26,13 @@ return array(
             ),
         ),
     ),
+    'Books\\V1\\Rpc\\Hello\\Controller' => array(
+        'description' => 'Sends greeting',
+        'GET' => array(
+            'description' => 'Pings the API for the acknoledgement',
+            'response' => '{
+    "ack": "acknowledge with timestamp"
+}',
+        ),
+    ),
 );
