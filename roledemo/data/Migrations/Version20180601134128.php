@@ -10,6 +10,16 @@ use Doctrine\DBAL\Schema\Schema;
  */
 final class Version20180601134128 extends AbstractMigration
 {
+    /**
+     * Returns the description of this migration.
+     */
+    public function getDescription()
+    {
+        $description = 'This is the migration which provides user impersonation.';
+
+        return $description;
+    }
+
     public function up(Schema $schema) : void
     {
         // this up() migration is auto-generated, please modify it to your needs

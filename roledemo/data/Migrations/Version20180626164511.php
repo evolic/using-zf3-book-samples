@@ -10,6 +10,16 @@ use Doctrine\DBAL\Schema\Schema;
  */
 final class Version20180626164511 extends AbstractMigration
 {
+    /**
+     * Returns the description of this migration.
+     */
+    public function getDescription()
+    {
+        $description = 'This is the migration which provides books and their authors.';
+
+        return $description;
+    }
+
     public function up(Schema $schema) : void
     {
         // this up() migration is auto-generated, please modify it to your needs
@@ -35,7 +45,7 @@ final class Version20180626164511 extends AbstractMigration
             [],
             'books_author_id_fk'
         );
-        $table->addOption('engine' , 'InnoDB');
+        $table->addOption('engine', 'InnoDB');
     }
 
     public function down(Schema $schema) : void
